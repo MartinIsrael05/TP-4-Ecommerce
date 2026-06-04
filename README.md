@@ -44,6 +44,10 @@ El usuario debera poder elegir una combinacion de opciones y agregar al carrito 
 
 ### 5.1 Productos
 
+**Entidad**
+
+Se debe trabajar con la entidad `Product`.
+
 Cada producto debe incluir, como minimo:
 
 - Nombre.
@@ -54,7 +58,33 @@ Cada producto debe incluir, como minimo:
 - Categorias.
 - Opciones o atributos de customizacion.
 
-Los productos deben poder pertenecer a muchas categorias. No se contemplan subcategorias.
+**Relaciones**
+
+- Un producto puede pertenecer a muchas categorias.
+- La relacion con categorias debe guardarse mediante IDs de categorias.
+- No se contemplan subcategorias.
+
+**Imagenes**
+
+- Las imagenes deben almacenarse en `public/images/products/`.
+- En la base de datos se debe guardar solamente el nombre del archivo.
+- No se deben guardar URLs externas como requisito principal.
+
+Ejemplo:
+
+```json
+{
+  "image": "imagen01.jpg"
+}
+```
+
+Luego, en la aplicacion, la imagen debe referenciarse como:
+
+```bash
+/images/products/imagen01.jpg
+```
+
+**Funciones**
 
 Se debe implementar la funcion:
 
@@ -64,25 +94,17 @@ getProduct(id)
 
 Esta funcion debera obtener un producto por su ID y ser utilizada en la pantalla de detalle del producto.
 
-### 5.2 Categorias (Resuelto a modo de ejemplo)
+**API**
 
-La aplicacion debe permitir:
+Se deben crear o completar las rutas de API necesarias para:
 
-- Crear categorias.
-- Listar categorias.
-- Editar categorias.
-- Eliminar categorias.
-- Asociar productos a una o varias categorias.
-- Ver productos pertenecientes a una categoria.
+- Listar productos.
+- Obtener un producto por ID.
+- Crear productos.
+- Editar productos.
+- Eliminar productos.
 
-La ruta publica de categorias debe incluir:
-
-```bash
-/categories
-/category/[id]
-```
-
-### 5.3 Pantalla de Producto
+**Pantalla**
 
 Se debe crear la ruta:
 
@@ -106,111 +128,70 @@ La pantalla de producto debe mostrar:
 
 Los productos relacionados deben obtenerse a partir de alguna categoria compartida con el producto actual.
 
-### 5.4 Imagenes de Productos
+### 5.2 Categorias (Resuelto a modo de ejemplo)
 
-Las imagenes de productos deben almacenarse dentro de la carpeta:
+**Entidad**
 
-```bash
-public/images/products/
-```
+Se debe trabajar con la entidad `Category`.
 
-En la base de datos se debe guardar solamente el nombre del archivo.
+Cada categoria debe incluir, como minimo:
 
-Ejemplo:
+- Nombre.
+- Descripcion.
 
-```json
-{
-  "image": "imagen01.jpg"
-}
-```
+**Relaciones**
 
-Luego, en la aplicacion, la imagen debe referenciarse como:
+- Una categoria puede estar asociada a muchos productos.
+- Un producto puede estar asociado a muchas categorias.
+- La relacion se resuelve desde el producto guardando IDs de categorias.
+- No se contemplan subcategorias.
 
-```bash
-/images/products/imagen01.jpg
-```
+**Pantallas**
 
-No se deben guardar URLs externas como requisito principal del trabajo.
-
-### 5.5 Context Global de la Aplicacion
-
-Se debe crear un context global para administrar el estado principal de la aplicacion.
-
-El context debe incluir, como minimo, tres estados:
-
-- `cart`: listado de productos agregados al carrito.
-- `favorites`: listado de productos favoritos. Si el usuario no inicio sesion, se mantienen temporalmente en el context. Si el usuario esta logueado, deben sincronizarse con la base de datos.
-- `activeUser`: datos del usuario activo luego del login.
-
-El context debe proveer funciones para:
-
-- Agregar productos al carrito.
-- Quitar productos del carrito.
-- Cambiar cantidades.
-- Vaciar el carrito.
-- Agregar productos a favoritos.
-- Quitar productos de favoritos.
-- Guardar el usuario activo.
-- Cerrar sesion o limpiar el usuario activo.
-
-Como `activeUser` vive en el context de la aplicacion, las consultas que dependan del usuario activo deben realizarse desde el lado cliente. Por ejemplo, una vez que el usuario hizo login y `activeUser` tiene su ID, se debe hacer un `fetch` desde un componente cliente o desde una funcion del context para traer informacion asociada a ese usuario, como sus favoritos.
-
-### 5.6 Carrito
-
-Se debe crear la ruta:
+La ruta publica de categorias debe incluir:
 
 ```bash
-/cart
+/categories
+/category/[id]
 ```
 
-La pantalla del carrito debe mostrar:
+La pantalla `/categories` debe listar las categorias disponibles.
 
-- Productos agregados.
-- Imagen o referencia visual del producto.
-- Nombre del producto.
-- Customizaciones seleccionadas.
-- Precio unitario.
-- Cantidad.
-- Subtotal por item.
-- Total general.
+La pantalla `/category/[id]` debe listar los productos pertenecientes a esa categoria.
 
-Desde el carrito, el usuario debe poder:
+**CRUD**
 
-- Incrementar o disminuir cantidades.
-- Eliminar productos.
-- Continuar al checkout.
+La aplicacion debe permitir:
 
-El carrito debe contemplar productos customizados. Dos productos con el mismo ID pero con distintas opciones elegidas deben considerarse items distintos.
+- Crear categorias.
+- Listar categorias.
+- Editar categorias.
+- Eliminar categorias.
+- Asociar productos a una o varias categorias.
+- Ver productos pertenecientes a una categoria.
 
-### 5.7 Favoritos
+**API**
 
-El usuario debe poder marcar productos como favoritos.
+Se deben crear o completar las rutas de API necesarias para:
 
-Se debe crear la ruta:
+- Listar categorias.
+- Obtener una categoria por ID.
+- Crear categorias.
+- Editar categorias.
+- Eliminar categorias.
 
-```bash
-/favorites
-```
+### 5.3 Favoritos (CLIENT SIDE)
 
-Esta pantalla debe mostrar el listado de productos favoritos disponibles en el context. Si el usuario no inicio sesion, se mostraran los favoritos temporales. Si el usuario esta logueado, se mostraran los favoritos sincronizados con la base de datos.
+**Estado**
 
-La carga de favoritos persistidos debe realizarse desde el cliente, usando el ID disponible en `activeUser`.
+Los favoritos deben guardarse en el estado `favorites` del context global.
 
-Ejemplo de flujo esperado para un usuario logueado:
+**Relacion con usuarios y productos**
 
-- El usuario inicia sesion.
-- El usuario queda guardado en el context como `activeUser`.
-- La aplicacion toma `activeUser._id`.
-- Se realiza un `fetch` a una ruta de API para obtener los favoritos desde la base de datos.
-- La respuesta se guarda en el estado `favorites` del context.
-
-Un endpoint posible seria:
-
-```bash
-GET /api/users/[userId]/favorites
-```
-
-La base de datos debe guardar solamente los IDs de los productos favoritos, pero la API puede devolver los productos completos usando `populate` para facilitar el renderizado de la pantalla `/favorites`.
+- Si el usuario no inicio sesion, los favoritos se guardan temporalmente en el context.
+- Si el usuario esta logueado, los favoritos deben sincronizarse con la base de datos.
+- En la base de datos se deben almacenar solamente los IDs de los productos favoritos.
+- Los favoritos persistidos deben estar asociados al usuario.
 
 Ejemplo de campo en el modelo `User`:
 
@@ -223,6 +204,8 @@ favorites: [
 ]
 ```
 
+La API puede devolver los productos completos usando `populate` para facilitar el renderizado de la pantalla `/favorites`.
+
 Ejemplo de consulta en la API:
 
 ```js
@@ -233,21 +216,30 @@ return Response.json({
 });
 ```
 
-Si el usuario todavia no inicio sesion:
+Referencia recomendada: documentacion oficial de Mongoose sobre `populate`: https://mongoosejs.com/docs/populate.html
 
-- Puede marcar productos como favoritos.
-- Esos favoritos deben guardarse temporalmente en el estado `favorites` del context.
-- No se guardan todavia en la base de datos porque no existe un usuario asociado.
+**Pantalla**
 
-Cuando el usuario inicia sesion:
+Se debe crear la ruta:
 
-- Se deben obtener los favoritos persistidos del usuario desde la base de datos.
-- Se deben combinar con los favoritos temporales que estaban en el context.
-- Se debe evitar duplicar productos.
-- Se debe sincronizar el resultado final con la base de datos.
-- Se debe actualizar el estado `favorites` del context con la lista final.
+```bash
+/favorites
+```
 
-Endpoints sugeridos para favoritos:
+Esta pantalla debe implementarse del lado cliente cuando utilice `activeUser` o `favorites` desde el context. La informacion persistida debe obtenerse llamando a las API routes mediante `fetch` o `axios`; no se debe depender de una consulta directa server-side para saber que usuario esta activo, porque ese dato vive en el context del cliente.
+
+La pantalla de favoritos debe mostrar el listado de productos favoritos disponibles en el context.
+
+Si el usuario no inicio sesion, se mostraran los favoritos temporales. Si el usuario esta logueado, se mostraran los favoritos sincronizados con la base de datos.
+
+La pantalla de favoritos debe permitir:
+
+- Visualizar los productos guardados como favoritos.
+- Acceder al detalle de cada producto.
+- Quitar productos de favoritos.
+- Mostrar un mensaje claro si el usuario no tiene favoritos cargados.
+
+**API sugerida**
 
 ```bash
 GET /api/users/[userId]/favorites
@@ -263,48 +255,121 @@ Uso esperado de cada endpoint:
 - `DELETE /api/users/[userId]/favorites/[productId]`: quita un producto de favoritos.
 - `PUT /api/users/[userId]/favorites/sync`: recibe un array de IDs de productos favoritos y lo sincroniza con los favoritos existentes del usuario, evitando duplicados.
 
-La pantalla de favoritos debe permitir:
+**Comportamiento**
 
-- Visualizar los productos guardados como favoritos.
-- Acceder al detalle de cada producto.
-- Quitar productos de favoritos.
-- Mostrar un mensaje claro si el usuario no tiene favoritos cargados.
+- Cuando un producto se agrega a favoritos, debe actualizarse el estado `favorites` del context.
+- Cuando un producto se agrega a favoritos y hay usuario logueado, debe guardarse en la base de datos.
+- Cuando un producto se quita de favoritos, debe actualizarse el estado `favorites` del context.
+- Cuando un producto se quita de favoritos y hay usuario logueado, debe quitarse de la base de datos.
+- Si el usuario no inicio sesion, puede marcar favoritos temporalmente en el context.
+- Cuando el usuario inicia sesion, se deben obtener sus favoritos persistidos, combinarlos con los favoritos temporales, evitar duplicados, sincronizar con MongoDB y actualizar el context.
 
-Cuando un producto se agrega a favoritos:
+La carga de favoritos persistidos debe realizarse desde el cliente, usando el ID disponible en `activeUser` y haciendo un request a la API route correspondiente con `fetch` o `axios`.
 
-- Debe actualizarse el estado `favorites` del context.
-- Debe guardarse en la base de datos asociado al usuario.
+### 5.4 Carrito (CLIENT SIDE)
 
-Cuando un producto se quita de favoritos:
+**Estado**
 
-- Debe actualizarse el estado `favorites` del context.
-- Debe quitarse de la base de datos.
+El carrito debe guardarse en el estado `cart` del context global.
 
-En la base de datos se deben almacenar solamente los IDs de los productos favoritos.
+Cada item del carrito debe incluir, como minimo:
 
-### 5.8 Usuarios
+- ID del producto.
+- Nombre del producto.
+- Imagen.
+- Precio unitario.
+- Cantidad.
+- Customizaciones seleccionadas.
+- Subtotal.
 
-Se debe crear la entidad `User`.
+**Relacion con productos**
 
-El usuario debe poder:
+- El carrito puede referenciar el ID del producto original.
+- Ademas del ID, debe conservar los datos necesarios para mostrar el item correctamente.
+- Dos productos con el mismo ID pero con distintas opciones elegidas deben considerarse items distintos.
 
-- Registrarse.
-- Crear un registro en la base de datos.
-- Iniciar sesion.
-- Obtener sus datos desde la base de datos al hacer login.
-- Quedar almacenado como `activeUser` en el context global.
+**Pantalla**
 
-El modelo de usuario debe incluir, como minimo:
+Se debe crear la ruta:
 
-- Nombre.
-- Email.
-- Password o campo equivalente segun la estrategia implementada.
-- Productos favoritos.
-- Fecha de creacion.
+```bash
+/cart
+```
 
-No es obligatorio implementar autenticacion avanzada, pero si debe existir persistencia real del usuario en MongoDB.
+Esta pantalla debe implementarse del lado cliente porque depende del estado `cart` del context global.
 
-### 5.9 Ordenes de Compra
+La pantalla del carrito debe mostrar:
+
+- Productos agregados.
+- Imagen o referencia visual del producto.
+- Nombre del producto.
+- Customizaciones seleccionadas.
+- Precio unitario.
+- Cantidad.
+- Subtotal por item.
+- Total general.
+
+**Acciones**
+
+Desde el carrito, el usuario debe poder:
+
+- Incrementar o disminuir cantidades.
+- Eliminar productos.
+- Continuar al checkout.
+
+### 5.5 Checkout (CLIENT SIDE)
+
+**Pantalla**
+
+Se debe crear la ruta:
+
+```bash
+/checkout
+```
+
+Esta pantalla debe implementarse del lado cliente cuando tome datos desde `cart` o `activeUser` del context global.
+
+La pantalla de checkout debe incluir un formulario para finalizar la compra.
+
+El formulario debe permitir cargar o confirmar:
+
+- Datos del usuario.
+- Datos de contacto.
+- Direccion o informacion necesaria para la entrega.
+- Observaciones de la compra, si fueran necesarias.
+- Opciones de envio, en caso de implementarse.
+
+**Relacion con carrito, usuario y orden**
+
+- El checkout toma los items del `cart`.
+- Si hay usuario logueado, la orden debe asociarse a `activeUser`.
+- La order creada debe guardar el snapshot de productos comprados.
+- La order creada debe guardar los datos necesarios del usuario comprador.
+
+**Comportamiento**
+
+Al enviar el formulario:
+
+- Se debe crear una order en la base de datos.
+- Se debe guardar el detalle completo del carrito.
+- Se debe calcular y guardar el total.
+- Se debe asignar un numero secuencial de orden.
+- Se debe mostrar un mensaje de agradecimiento o confirmacion de compra, idealmente incluyendo el numero de orden generado.
+- Se debe limpiar el carrito si la orden fue creada correctamente.
+
+**API**
+
+Se debe crear una ruta de API para generar la orden.
+
+Ejemplo sugerido:
+
+```bash
+POST /api/orders
+```
+
+### 5.6 Ordenes de Compra
+
+**Entidad**
 
 Se debe crear la entidad `Order`.
 
@@ -322,6 +387,28 @@ Cada orden debe incluir:
 - Subtotales.
 - Total de la orden.
 
+**Relaciones**
+
+- Una orden pertenece a un usuario.
+- La orden debe guardar los datos del usuario que compro.
+- La orden debe guardar un array de productos comprados.
+
+**Snapshot de productos**
+
+El detalle de productos de una orden no debe guardar solamente el ID del producto. La orden debe guardar un snapshot de los datos necesarios para reconstruir la compra aunque luego el producto sea editado o eliminado.
+
+Cada item dentro del array de productos de la orden debe incluir, como minimo:
+
+- ID del producto.
+- Nombre del producto.
+- Foto o nombre de imagen.
+- Precio unitario al momento de la compra.
+- Cantidad comprada.
+- Customizaciones seleccionadas.
+- Subtotal del item.
+
+**Numero secuencial**
+
 El numero de orden debe ser secuencial.
 
 Ejemplo:
@@ -334,6 +421,8 @@ Order Nro 1002
 
 La numeracion puede implementarse mediante una coleccion auxiliar, un contador o cualquier estrategia consistente que garantice el incremento correcto.
 
+**Estados**
+
 Las ordenes deben manejar cuatro estados posibles:
 
 - `Active`: orden recibida y pendiente de procesamiento.
@@ -343,70 +432,143 @@ Las ordenes deben manejar cuatro estados posibles:
 
 El estado de la orden debe poder modificarse desde las pantallas administrativas correspondientes.
 
-### 5.10 Checkout
+**Pantallas relacionadas**
+
+- `/user`: listado de ordenes del usuario activo.
+- `/user/order/[id]`: detalle de orden visible para el usuario, solo lectura.
+- `/dashboard/orders`: listado administrativo de todas las ordenes.
+- `/dashboard/order/[id]`: detalle administrativo de orden con cambio de estado.
+
+**API**
+
+Se deben crear las rutas de API necesarias para:
+
+- Crear ordenes.
+- Listar ordenes.
+- Listar ordenes de un usuario.
+- Obtener una orden por ID.
+- Cambiar el estado de una orden desde el dashboard.
+
+### 5.7 Usuarios
+
+**Entidad**
+
+Se debe crear la entidad `User`.
+
+El modelo de usuario debe incluir, como minimo:
+
+- Nombre.
+- Email.
+- Password o campo equivalente segun la estrategia implementada.
+- Productos favoritos.
+- Fecha de creacion.
+
+**Relaciones**
+
+- Un usuario puede tener muchos productos favoritos.
+- Un usuario puede tener muchas ordenes.
+- Los favoritos se guardan como IDs de productos.
+- Las ordenes deben asociarse al usuario que realizo la compra.
+
+**Comportamiento**
+
+- El usuario debe poder registrarse.
+- El registro debe crear un documento en la base de datos.
+- El usuario debe poder iniciar sesion.
+- Al hacer login, se deben obtener los datos del usuario desde la base de datos.
+- El usuario logueado debe quedar almacenado como `activeUser` en el context global.
+
+No es obligatorio implementar autenticacion avanzada, pero si debe existir persistencia real del usuario en MongoDB.
+
+**API**
+
+Se deben crear las rutas de API necesarias para:
+
+- Registrar usuarios.
+- Hacer login.
+- Obtener un usuario por ID.
+- Obtener los datos del usuario activo cuando corresponda.
+
+### 5.8 Panel del Usuario (CLIENT SIDE)
+
+**Entidad relacionada**
+
+Esta seccion depende de `User` y `Order`.
+
+**Relaciones**
+
+- Se deben listar solamente las ordenes asociadas al usuario activo.
+- Cada orden debe estar relacionada con el usuario que realizo la compra.
+
+**Pantalla**
 
 Se debe crear la ruta:
 
 ```bash
-/checkout
+/user
 ```
 
-La pantalla de checkout debe incluir un formulario para finalizar la compra.
+Como esta pantalla depende del usuario activo guardado en el context, la carga de las ordenes del usuario debe hacerse del lado cliente. Se debe tomar el ID desde `activeUser` y consultar una API route con `fetch` o `axios`.
 
-El formulario debe permitir cargar o confirmar:
+La pantalla `/user` debe mostrar, como minimo:
 
-- Datos del usuario.
-- Datos de contacto.
-- Direccion o informacion necesaria para la entrega.
-- Observaciones de la compra, si fueran necesarias.
-- Opciones de envio, en caso de implementarse.
+- Datos principales del usuario activo.
+- Listado de ordenes realizadas por ese usuario.
+- Numero de orden.
+- Fecha.
+- Total.
+- Estado actual de cada orden.
+- Link para acceder al detalle de cada orden.
 
-Al enviar el formulario:
-
-- Se debe crear una order en la base de datos.
-- Se debe guardar el detalle completo del carrito.
-- Se debe calcular y guardar el total.
-- Se debe asignar un numero secuencial de orden.
-- Se debe mostrar un mensaje de agradecimiento o confirmacion de compra, idealmente incluyendo el numero de orden generado.
-- Se debe limpiar el carrito si la orden fue creada correctamente.
-
-## 6. Rutas Obligatorias
-
-La aplicacion debe contar con las siguientes rutas:
+Tambien se debe crear una pantalla de detalle de orden para el usuario:
 
 ```bash
-/
-/categories
-/category/[id]
-/product/[id]
-/cart
-/favorites
-/checkout
-/dashboard
-/dashboard/products
-/dashboard/orders
-/dashboard/order/[id]
+/user/order/[id]
 ```
 
-Ademas, se deben crear las rutas de API necesarias para:
+Esta pantalla tambien debe validar desde el lado cliente el usuario activo y pedir el detalle de la orden a la API route correspondiente. La API debe asegurar que la orden solicitada pertenezca al usuario indicado.
 
-- Productos.
-- Categorias.
-- Usuarios.
-- Favoritos.
-- Ordenes.
+Esta pantalla debe mostrar:
 
-## 7. Dashboard
+- Numero de orden.
+- Fecha.
+- Estado.
+- Datos de contacto o envio cargados en checkout.
+- Productos comprados.
+- Customizaciones seleccionadas.
+- Cantidades.
+- Precios unitarios.
+- Subtotales.
+- Total final.
 
-La ruta:
+**Permisos**
+
+- Esta pantalla es de solo lectura para el usuario.
+- No debe permitir cambiar el estado de la orden ni modificar sus datos.
+- El usuario solo debe poder visualizar sus propias ordenes.
+
+**API sugerida**
+
+```bash
+GET /api/users/[userId]/orders
+GET /api/users/[userId]/orders/[orderId]
+```
+
+Estas rutas deben devolver solamente ordenes asociadas al usuario indicado.
+
+El consumo de estas rutas debe realizarse desde componentes cliente usando el ID disponible en `activeUser`.
+
+### 5.9 Dashboard (ADMIN)
+
+**Pantallas**
+
+Se debe reformular la ruta:
 
 ```bash
 /dashboard
 ```
 
-Debe reformularse para funcionar como pantalla principal de resumen administrativo del ecommerce.
-
-Esta pantalla debe mostrar, como minimo:
+Esta pantalla debe funcionar como resumen administrativo del ecommerce y mostrar, como minimo:
 
 - Ultimas 5 ordenes recibidas.
 - Total vendido en el mes.
@@ -430,56 +592,114 @@ Esta pantalla debe permitir:
 - Eliminar categorias.
 - Asociar categorias a productos.
 
-### 7.1 Administracion de Ordenes
-
-Se debe crear la ruta:
+Tambien se debe crear:
 
 ```bash
 /dashboard/orders
+/dashboard/order/[id]
 ```
 
-Esta pantalla debe listar todas las ordenes recibidas.
-
-El listado debe mostrar, como minimo:
-
-- Numero de orden.
-- Fecha.
-- Usuario comprador.
-- Total.
-- Estado actual.
-- Acceso al detalle de la orden.
-
-Desde esta pantalla se debe poder cambiar el estado de cada orden entre:
+La pantalla `/dashboard/orders` debe listar todas las ordenes recibidas y permitir cambiar el estado de cada orden entre:
 
 - `Active`
 - `Closed`
 - `Shipped`
 - `Canceled`
 
-Se debe crear tambien una pantalla de detalle de orden:
+La pantalla `/dashboard/order/[id]` corresponde al administrador. Debe mostrar el detalle completo de la orden, la informacion del usuario comprador y permitir cambiar el estado de la orden.
 
-```bash
-/dashboard/order/[id]
-```
+**Relaciones**
 
-En esta pantalla se debe visualizar:
+- El dashboard trabaja con productos, categorias, usuarios y ordenes.
+- El detalle administrativo de una orden debe obtener la informacion del usuario desde la entidad `User`.
+- Las ordenes listadas deben usar la entidad `Order`.
 
-- Numero de orden.
-- Fecha.
-- Estado.
-- Informacion completa del usuario que realizo la compra, obtenida desde la entidad `User`.
-- Datos de contacto o envio cargados en checkout.
-- Detalle de productos comprados.
-- Customizaciones seleccionadas.
-- Cantidades.
-- Subtotales.
-- Total final.
+**Componentes**
 
-Desde la pantalla de detalle tambien se debe poder cambiar el estado de la orden.
+Se recomienda reutilizar el componente de visualizacion del detalle de la orden entre `/user/order/[id]` y `/dashboard/order/[id]`, mostrando acciones distintas segun el contexto.
 
 El componente utilizado para cambiar el estado de una orden debe reutilizarse tanto en `/dashboard/orders` como en `/dashboard/order/[id]`.
 
-## 8. Diseño e Interfaz
+**API**
+
+Se deben crear las rutas de API necesarias para:
+
+- Obtener metricas o datos de resumen para `/dashboard`.
+- Listar ordenes para `/dashboard/orders`.
+- Obtener una orden por ID para `/dashboard/order/[id]`.
+- Cambiar el estado de una orden.
+- Obtener productos con stock bajo.
+
+Las pantallas administrativas del dashboard no dependen del `activeUser` del comprador para listar ordenes. Pueden obtener datos desde Server Components, Server Actions o desde componentes cliente consumiendo API routes, segun el enfoque elegido.
+
+### 5.10 Context Global de la Aplicacion
+
+**Context**
+
+Se debe crear un context global para administrar el estado principal de la aplicacion.
+
+El context debe incluir, como minimo, tres estados:
+
+- `cart`: listado de productos agregados al carrito.
+- `favorites`: listado de productos favoritos. Si el usuario no inicio sesion, se mantienen temporalmente en el context. Si el usuario esta logueado, deben sincronizarse con la base de datos.
+- `activeUser`: datos del usuario activo luego del login.
+
+**Funciones del context**
+
+El context debe proveer funciones para:
+
+- Agregar productos al carrito.
+- Quitar productos del carrito.
+- Cambiar cantidades.
+- Vaciar el carrito.
+- Agregar productos a favoritos.
+- Quitar productos de favoritos.
+- Guardar el usuario activo.
+- Cerrar sesion o limpiar el usuario activo.
+
+**Carga de datos dependientes del usuario**
+
+Como `activeUser` vive en el context de la aplicacion, las consultas que dependan del usuario activo deben realizarse desde el lado cliente.
+
+Por ejemplo, una vez que el usuario hizo login y `activeUser` tiene su ID, se debe hacer un `fetch` desde un componente cliente o desde una funcion del context para traer informacion asociada a ese usuario, como sus favoritos.
+
+## 6. Rutas Obligatorias
+
+La aplicacion debe contar con las siguientes rutas, separadas por tipo de uso.
+
+**Pantallas publicas**
+
+```bash
+/
+/categories
+/category/[id]
+/product/[id]
+```
+
+**Pantallas del usuario / client-side**
+
+Estas pantallas dependen del context global (`cart`, `favorites`, `activeUser`) y deben consumir API routes con `fetch` o `axios` cuando necesiten datos persistidos.
+
+```bash
+/cart
+/favorites
+/checkout
+/user
+/user/order/[id]
+```
+
+**Pantallas del dashboard / admin**
+
+Estas pantallas corresponden a la administracion del ecommerce.
+
+```bash
+/dashboard
+/dashboard/products
+/dashboard/orders
+/dashboard/order/[id]
+```
+
+## 7. Diseño e Interfaz
 
 El proyecto debe implementar un diseño moderno utilizando TailwindCSS.
 
@@ -494,23 +714,23 @@ Se evaluara:
 
 La aplicacion debe contar con una navegacion principal que permita acceder a las secciones mas importantes.
 
-## 9. Opcionales
+## 8. Opcionales
 
-Los siguientes puntos son opcionales y suman valor al trabajo:
+Los siguientes puntos son opcionales y suman valor al trabajo. **Se deberán elegir al menos 3 del listado e implementarlos**.
 
-- Integrar envio de emails al confirmar una compra.
-- Enviar email al usuario con el resumen de su orden.
-- Enviar email al dueño de la tienda notificando una nueva compra.
-- Usar servicios como SendGrid, MailJS, Nodemailer u otros.
+- Usar servicios como SendGrid, MailJS, Nodemailer u otros para integrar envio de emails al confirmar una compra. Se envia mail al usuario y al shop owner
 - Agregar opciones de envio.
+- Agregar simulación de pago con tarjeta o medios de pago
 - Agregar busqueda de productos.
-- Agregar filtros por categoria o precio.
-- Agregar historial de ordenes del usuario.
+- Agregar filtros por categoria y precio.
+- Agregar filtros, busqueda o paginacion dentro del historial de ordenes del usuario.
 - Agregar graficos en el dashboard.
-- Hostear las imagenes en Vercel Blob u otro servicio similar. Este punto es opcional y no reemplaza el requisito base de trabajar con imagenes locales en `public/images/products/`.
+- Hostear las imagenes en Vercel Blob u otro servicio similar como mejora opcional, manteniendo documentado cómo se resuelven las imagenes y sin romper el requisito base de imagenes locales.
 - Realizar autenticacion del usuario mediante JWT, encriptando el password en el servidor.
+- Agregar middleware de autorización para páginas privadas o públicas. Ej: Solo un usuario admin puede loguearse y ver el dashboard; Cada usuario puede ver solo su dashboard.
+- Integrar etiquetas meta dinámicas para SEO: Meta tags, OG, sitemap dinámico.
 
-## 10. Configuracion del Proyecto
+## 9. Configuracion del Proyecto
 
 Crear un archivo `.env` basado en `env.example` y configurar la conexion a MongoDB.
 
@@ -538,7 +758,7 @@ Abrir en el navegador:
 http://localhost:3000
 ```
 
-## 11. Criterios de Evaluacion
+## 10. Criterios de Evaluacion
 
 Se evaluara:
 
@@ -547,8 +767,10 @@ Se evaluara:
 - Correcto uso del context global.
 - Persistencia de usuarios, favoritos y ordenes.
 - Funcionamiento de la pantalla de favoritos.
+- Funcionamiento del panel de usuario y detalle de sus ordenes.
 - Funcionamiento del carrito con productos customizados.
 - Creacion correcta de orders con numero secuencial.
+- Correcto guardado del snapshot de productos dentro de cada orden.
 - Mensaje de agradecimiento o confirmacion visible luego de crear una orden.
 - Implementacion del dashboard administrativo con resumen, listado de ordenes y cambio de estado.
 - Calidad del diseño implementado con TailwindCSS.
@@ -557,7 +779,7 @@ Se evaluara:
 - Manejo adecuado de estados y formularios.
 - Navegabilidad general de la aplicacion.
 
-## 12. Entrega
+## 11. Entrega
 
 El proyecto debe entregarse funcionando localmente.
 
@@ -578,9 +800,9 @@ Todas las rutas principales deben ser accesibles desde la interfaz de usuario.
 
 Cualquier propuesta superadora será tomada en cuenta.
 
-## 13 Diagramas de flujo
+## 12 Diagramas de flujo
 
-## 13.1 Flujo general de navegación
+## 12.1 Flujo general de navegación
 
 El siguiente diagrama representa el recorrido principal que puede realizar un usuario dentro del ecommerce, desde el ingreso al sitio hasta la finalización de una compra.
 
@@ -608,7 +830,7 @@ flowchart TD
     N -->|Sí| P[Sincronizar favoritos con MongoDB]
 ```
 
-## 13.2 Flujo de información del carrito y checkout
+## 12.2 Flujo de información del carrito y checkout
 
 El siguiente diagrama muestra cómo circula la información desde la pantalla de detalle del producto hasta la creación de una orden de compra en la base de datos.
 
@@ -625,7 +847,7 @@ flowchart LR
     I --> J[Dashboard de órdenes]
 ```
 
-## 13.3 Flujo de favoritos
+## 12.3 Flujo de favoritos
 
 El siguiente diagrama representa el comportamiento esperado de los productos favoritos, contemplando usuarios no logueados y usuarios logueados.
 
@@ -649,7 +871,7 @@ flowchart TD
     N --> O[Actualizar Context]
 ```
 
-## 13.4 Flujo de administración de órdenes
+## 12.4 Flujo de administración de órdenes
 
 El siguiente diagrama muestra el recorrido de una orden desde que es generada por el usuario hasta que es gestionada desde el dashboard administrativo.
 
