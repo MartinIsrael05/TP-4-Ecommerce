@@ -578,7 +578,9 @@ Todas las rutas principales deben ser accesibles desde la interfaz de usuario.
 
 Cualquier propuesta superadora será tomada en cuenta.
 
-## 13.2 Flujo general de navegación
+## 13 Diagramas de flujo
+
+## 13.1 Flujo general de navegación
 
 El siguiente diagrama representa el recorrido principal que puede realizar un usuario dentro del ecommerce, desde el ingreso al sitio hasta la finalización de una compra.
 
@@ -606,7 +608,7 @@ flowchart TD
     N -->|Sí| P[Sincronizar favoritos con MongoDB]
 ```
 
-## 13.3 Flujo de información del carrito y checkout
+## 13.2 Flujo de información del carrito y checkout
 
 El siguiente diagrama muestra cómo circula la información desde la pantalla de detalle del producto hasta la creación de una orden de compra en la base de datos.
 
@@ -623,7 +625,7 @@ flowchart LR
     I --> J[Dashboard de órdenes]
 ```
 
-## 13.4 Flujo de favoritos
+## 13.3 Flujo de favoritos
 
 El siguiente diagrama representa el comportamiento esperado de los productos favoritos, contemplando usuarios no logueados y usuarios logueados.
 
@@ -647,7 +649,7 @@ flowchart TD
     N --> O[Actualizar Context]
 ```
 
-## 13.5 Flujo de administración de órdenes
+## 13.4 Flujo de administración de órdenes
 
 El siguiente diagrama muestra el recorrido de una orden desde que es generada por el usuario hasta que es gestionada desde el dashboard administrativo.
 
@@ -670,5 +672,6 @@ flowchart TD
 ```
 
 
+---------
 
 **Welcome to the e-machine**
