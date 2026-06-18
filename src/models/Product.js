@@ -34,50 +34,7 @@ const productSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
-
-    customizableAttributes: {
-      concentration: [
-        {
-          name: String,
-          priceModifier: Number,
-        },
-      ],
-      volume: [
-        {
-          ml: Number,
-          priceModifier: Number,
-        },
-      ],
-      bottleDesign: [
-        {
-          name: String,
-          priceModifier: Number,
-        },
-      ],
-      packaging: [
-        {
-          name: String,
-          priceModifier: Number,
-        },
-      ],
-    },
-
-    scent: {
-      family: String, // "Floral", "Oriental", "Frutal", etc.
-      topNotes: [String],
-      heartNotes: [String],
-      baseNotes: [String],
-    },
-
-    season: [String], // "Verano", "Otoño", "Invierno", "Primavera"
-    intensity: String, // "Discreta", "Moderada", "Fuerte"
-    rating: {
-      type: Number,
-      default: 0,
-    },
   },
-
-
   {
     timestamps: true,
   }

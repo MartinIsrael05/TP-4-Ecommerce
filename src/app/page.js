@@ -1,4 +1,5 @@
 import ProductGrid from "@/components/ProductGrid";
+import Hero from "@/components/Hero";
 import { getProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
@@ -7,12 +8,10 @@ export default async function Home() {
   const products = await getProducts();
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+    <main className="min-h-screen bg-background px-6 py-10 text-slate-900">
       <div className="mx-auto max-w-6xl">
+        <Hero />
         <section className="mb-8">
-          <p className="text-sm uppercase tracking-[0.3em] text-emerald-300">
-            Programacion 3
-          </p>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold">
             Productos
           </h1>
