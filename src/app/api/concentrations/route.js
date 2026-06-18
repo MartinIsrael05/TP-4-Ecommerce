@@ -15,7 +15,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     await connectDB();
-    const item = await Concentration.create({ name: body.name, image: body.image || "" });
+    const item = await Concentration.create({ name: body.name, priceModifier: body.priceModifier || 0, image: body.image || "" });
     return Response.json(item);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 400 });

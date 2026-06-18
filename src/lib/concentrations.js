@@ -5,6 +5,7 @@ function serializeConcentration(concentration) {
   return {
     _id: concentration._id.toString(),
     name: concentration.name,
+    priceModifier: concentration.priceModifier || 0,
     image: concentration.image,
     createdAt: concentration.createdAt?.toISOString(),
     updatedAt: concentration.updatedAt?.toISOString(),
