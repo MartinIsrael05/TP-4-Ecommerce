@@ -1,4 +1,5 @@
-import { getProductById } from "@/lib/products";
+import { notFound } from "next/navigation";
+import { getProductById, getRelatedProducts } from "@/lib/products";
 import { getNotes } from "@/lib/notes";
 import { getConcentrations } from "@/lib/concentrations";
 import { getVolumes } from "@/lib/volumes";
@@ -12,36 +13,37 @@ export default async function ProductPage({ params }) {
   const product = await getProductById(id);
 
   if (!product) {
-    return <p>Producto no encontrado</p>;
+    notFound();
   }
 
   const isCustomizable = product.categories.some(
-    (cat) => cat.name?.toLowerCase() === "creá tu perfume" ||
-             cat.name?.toLowerCase() === "crea tu perfume"
+    (cat) =>
+      cat.name?.toLowerCase() === "creá tu perfume" ||
+      cat.name?.toLowerCase() === "crea tu perfume"
   );
 
-  let options = {};
+  const categoryIds = product.categories.map((cat) => cat._id);
 
-  if (isCustomizable) {
-    const [volumes, concentrations, notes, bottleDesigns, packagings] = await Promise.all([
+  const [volumes, concentrations, notes, bottleDesigns, packagings, relatedProducts] =
+    await Promise.all([
       getVolumes(),
-      getConcentrations(),
-      getNotes(),
-      getBottleDesigns(),
-      getPackagings(),
+      isCustomizable ? getConcentrations() : Promise.resolve([]),
+      isCustomizable ? getNotes() : Promise.resolve([]),
+      isCustomizable ? getBottleDesigns() : Promise.resolve([]),
+      isCustomizable ? getPackagings() : Promise.resolve([]),
+      getRelatedProducts(id, categoryIds),
     ]);
 
-    options = { volumes, concentrations, notes, bottleDesigns, packagings };
-  } else {
-    const volumes = await getVolumes();
-    options = { volumes };
-  }
+  const options = isCustomizable
+    ? { volumes, concentrations, notes, bottleDesigns, packagings }
+    : { volumes };
 
   return (
     <ProductDetail
       product={product}
       isCustomizable={isCustomizable}
       options={options}
+      relatedProducts={relatedProducts}
     />
   );
 }

@@ -54,3 +54,17 @@ export async function getProductsByCategory(categoryId) {
 
   return products.map(serializeProduct);
 }
+
+export async function getRelatedProducts(productId, categoryIds) {
+  await connectDB();
+
+  const products = await Product.find({
+    categories: { $in: categoryIds },
+    _id: { $ne: productId },
+  })
+    .populate("categories")
+    .limit(4)
+    .lean();
+
+  return products.map(serializeProduct);
+}

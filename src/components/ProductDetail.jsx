@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAppContext } from "@/contexts/AppContext";
 
 const concentrationInfo = {
@@ -9,8 +10,8 @@ const concentrationInfo = {
   Parfum: "Parfum — Maxima concentracion y persistencia",
 };
 
-export default function ProductDetail({ product, isCustomizable, options }) {
-  const { addToCart } = useAppContext();
+export default function ProductDetail({ product, isCustomizable, options, relatedProducts = [] }) {
+  const { addToCart, addFavorite, removeFavorite, isFavorite } = useAppContext();
 
   const [selectedVolume, setSelectedVolume] = useState(null);
   const [selectedConcentration, setSelectedConcentration] = useState(null);
@@ -20,21 +21,36 @@ export default function ProductDetail({ product, isCustomizable, options }) {
   const [fragranceName, setFragranceName] = useState("");
   const [quantity, setQuantity] = useState(1);
 
-  const topNotes = (options.notes || []).filter(n => n.type === "salida");
-  const heartNotes = (options.notes || []).filter(n => n.type === "corazon");
-  const baseNotes = (options.notes || []).filter(n => n.type === "base");
+  const isFav = isFavorite(product._id);
+
+  const handleToggleFavorite = () => {
+    if (isFav) {
+      removeFavorite(product._id);
+    } else {
+      addFavorite({
+        _id: product._id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+      });
+    }
+  };
+
+  const topNotes = (options.notes || []).filter((n) => n.type === "salida");
+  const heartNotes = (options.notes || []).filter((n) => n.type === "corazon");
+  const baseNotes = (options.notes || []).filter((n) => n.type === "base");
 
   const handleNoteToggle = (note) => {
-    const exists = selectedNotes.some(n => n._id === note._id);
+    const exists = selectedNotes.some((n) => n._id === note._id);
     if (exists) {
-      setSelectedNotes(selectedNotes.filter(n => n._id !== note._id));
+      setSelectedNotes(selectedNotes.filter((n) => n._id !== note._id));
     } else {
-      if (selectedNotes.filter(n => n.type === note.type).length >= 3) return;
+      if (selectedNotes.filter((n) => n.type === note.type).length >= 3) return;
       setSelectedNotes([...selectedNotes, note]);
     }
   };
 
-  const notesOfType = (type) => selectedNotes.filter(n => n.type === type);
+  const notesOfType = (type) => selectedNotes.filter((n) => n.type === type);
 
   const basePrice = selectedVolume ? selectedVolume.price : 0;
   const concentrationExtra = selectedConcentration?.priceModifier || 0;
@@ -53,28 +69,62 @@ export default function ProductDetail({ product, isCustomizable, options }) {
       : { volume: selectedVolume };
 
     const price = basePrice + concentrationExtra;
-
     addToCart({ ...product, price }, customizations, quantity);
   };
 
   if (!isCustomizable) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-primary font-sora">{product.name}</h1>
-        <p className="mt-2 text-gray-600">{product.description}</p>
-        <p className="mt-2 text-xl font-semibold text-accent">desde ${product.price}</p>
+      <div className="max-w-4xl mx-auto px-6 py-10">
+        {/* Encabezado con botón de favoritos */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-primary font-sora">{product.name}</h1>
+            {product.categories?.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {product.categories.map((cat) =>
+                  typeof cat === "object" ? (
+                    <span
+                      key={cat._id}
+                      className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium"
+                    >
+                      {cat.name}
+                    </span>
+                  ) : null
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleToggleFavorite}
+            title={isFav ? "Quitar de favoritos" : "Agregar a favoritos"}
+            className={`p-2.5 rounded-full border-2 transition-colors flex-shrink-0 ${
+              isFav
+                ? "border-accent text-accent bg-accent/10"
+                : "border-gray-200 text-gray-400 hover:border-accent hover:text-accent"
+            }`}
+          >
+            <HeartIcon filled={isFav} />
+          </button>
+        </div>
 
+        <p className="mt-3 text-gray-600">{product.description}</p>
+        <p className="mt-2 text-xl font-semibold text-accent">desde ${product.price}</p>
+        <p className={`mt-1 text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
+          {product.stock > 0 ? `${product.stock} unidades disponibles` : "Sin stock"}
+        </p>
+
+        {/* Selector de volumen */}
         <div className="mt-6">
           <h2 className="font-semibold text-lg">Volumen</h2>
-          <div className="flex gap-3 mt-2">
-            {options.volumes?.map(volume => (
+          <div className="flex gap-3 mt-2 flex-wrap">
+            {options.volumes?.map((volume) => (
               <button
                 key={volume._id}
                 onClick={() => setSelectedVolume(volume)}
-                className={`px-4 py-2 rounded-lg border ${
+                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
                   selectedVolume?._id === volume._id
-                    ? "bg-primary text-secondary"
-                    : "border-gray-300"
+                    ? "border-accent bg-accent/10 text-primary font-semibold"
+                    : "border-gray-200 hover:border-gray-400"
                 }`}
               >
                 {volume.name} — ${volume.price}
@@ -83,11 +133,26 @@ export default function ProductDetail({ product, isCustomizable, options }) {
           </div>
         </div>
 
+        {/* Cantidad */}
         <div className="mt-6 flex items-center gap-4">
           <h2 className="font-semibold text-lg">Cantidad</h2>
-          <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-1 border rounded-lg">-</button>
-          <span>{quantity}</span>
-          <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-1 border rounded-lg">+</button>
+          <button
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            className="px-3 py-1 border rounded-lg hover:bg-gray-100"
+          >
+            -
+          </button>
+          <span className="font-bold w-6 text-center">{quantity}</span>
+          <button
+            onClick={() => setQuantity((q) => q + 1)}
+            disabled={quantity >= product.stock}
+            className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            +
+          </button>
+          {quantity >= product.stock && (
+            <span className="text-xs text-red-400 font-medium">Máximo disponible</span>
+          )}
         </div>
 
         {selectedVolume && (
@@ -99,28 +164,62 @@ export default function ProductDetail({ product, isCustomizable, options }) {
         <button
           onClick={handleAddToCart}
           disabled={!selectedVolume}
-          className="mt-6 w-full bg-primary text-secondary py-3 rounded-lg font-semibold disabled:opacity-40"
+          className="mt-6 w-full bg-primary text-secondary py-3 rounded-lg font-semibold disabled:opacity-40 hover:bg-primary-hover transition-colors"
         >
           Agregar al carrito
         </button>
+
+        <RelatedProductsSection products={relatedProducts} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto px-6 py-10">
 
-      {/* Header */}
-      <div className="text-center mb-10">
+      {/* Encabezado */}
+      <div className="text-center mb-10 relative">
+        <button
+          onClick={handleToggleFavorite}
+          title={isFav ? "Quitar de favoritos" : "Agregar a favoritos"}
+          className={`absolute top-0 right-0 p-2.5 rounded-full border-2 transition-colors ${
+            isFav
+              ? "border-accent text-accent bg-accent/10"
+              : "border-gray-200 text-gray-400 hover:border-accent hover:text-accent"
+          }`}
+        >
+          <HeartIcon filled={isFav} />
+        </button>
+
         <p className="text-sm uppercase tracking-[0.3em] text-accent font-semibold">Experiencia exclusiva</p>
         <h1 className="text-4xl font-bold text-primary font-sora mt-2">{product.name}</h1>
         <p className="mt-3 text-gray-500 max-w-2xl mx-auto">{product.description}</p>
+
+        <div className="flex items-center justify-center gap-4 mt-4 flex-wrap">
+          {product.categories?.length > 0 && (
+            <div className="flex gap-2 flex-wrap justify-center">
+              {product.categories.map((cat) =>
+                typeof cat === "object" ? (
+                  <span
+                    key={cat._id}
+                    className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium"
+                  >
+                    {cat.name}
+                  </span>
+                ) : null
+              )}
+            </div>
+          )}
+          <span className={`text-xs font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
+            {product.stock > 0 ? `${product.stock} disponibles` : "Sin stock"}
+          </span>
+        </div>
       </div>
 
       {/* Paso 1: Volumen */}
       <Section step="1" title="Elegí el volumen" icon={<DropletIcon />}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {options.volumes?.map(volume => (
+          {options.volumes?.map((volume) => (
             <button
               key={volume._id}
               onClick={() => setSelectedVolume(volume)}
@@ -140,7 +239,7 @@ export default function ProductDetail({ product, isCustomizable, options }) {
       {/* Paso 2: Concentracion */}
       <Section step="2" title="Elegí la concentración" icon={<FlaskIcon />}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {options.concentrations?.map(concentration => (
+          {options.concentrations?.map((concentration) => (
             <button
               key={concentration._id}
               onClick={() => setSelectedConcentration(concentration)}
@@ -210,12 +309,12 @@ export default function ProductDetail({ product, isCustomizable, options }) {
         <div className="space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Diseño de frasco</h3>
-            <div className="flex gap-3">
-              {options.bottleDesigns?.map(design => (
+            <div className="flex gap-3 flex-wrap">
+              {options.bottleDesigns?.map((design) => (
                 <button
                   key={design._id}
                   onClick={() => setSelectedBottleDesign(design)}
-                  className={`flex-1 rounded-xl border-2 p-4 text-center transition-all ${
+                  className={`flex-1 min-w-[100px] rounded-xl border-2 p-4 text-center transition-all ${
                     selectedBottleDesign?._id === design._id
                       ? "border-accent bg-accent-light"
                       : "border-gray-200 hover:border-gray-400"
@@ -229,12 +328,12 @@ export default function ProductDetail({ product, isCustomizable, options }) {
 
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Embalaje</h3>
-            <div className="flex gap-3">
-              {options.packagings?.map(packaging => (
+            <div className="flex gap-3 flex-wrap">
+              {options.packagings?.map((packaging) => (
                 <button
                   key={packaging._id}
                   onClick={() => setSelectedPackaging(packaging)}
-                  className={`flex-1 rounded-xl border-2 p-4 text-center transition-all ${
+                  className={`flex-1 min-w-[100px] rounded-xl border-2 p-4 text-center transition-all ${
                     selectedPackaging?._id === packaging._id
                       ? "border-accent bg-accent-light"
                       : "border-gray-200 hover:border-gray-400"
@@ -267,12 +366,15 @@ export default function ProductDetail({ product, isCustomizable, options }) {
 
         <div className="mt-4 space-y-2 text-sm">
           <PriceLine label="Volumen" value={selectedVolume ? `${selectedVolume.name} — $${selectedVolume.price}` : "Sin seleccionar"} />
-          <PriceLine label="Concentracion" value={
-            selectedConcentration
-              ? `${selectedConcentration.name}${concentrationExtra > 0 ? ` (+$${concentrationExtra})` : " (incluido)"}`
-              : "Sin seleccionar"
-          } />
-          <PriceLine label="Notas" value={selectedNotes.length > 0 ? selectedNotes.map(n => n.name).join(", ") : "Sin seleccionar"} />
+          <PriceLine
+            label="Concentracion"
+            value={
+              selectedConcentration
+                ? `${selectedConcentration.name}${concentrationExtra > 0 ? ` (+$${concentrationExtra})` : " (incluido)"}`
+                : "Sin seleccionar"
+            }
+          />
+          <PriceLine label="Notas" value={selectedNotes.length > 0 ? selectedNotes.map((n) => n.name).join(", ") : "Sin seleccionar"} />
           <PriceLine label="Frasco" value={selectedBottleDesign?.name || "Sin seleccionar"} />
           <PriceLine label="Embalaje" value={selectedPackaging?.name || "Sin seleccionar"} />
           {fragranceName && <PriceLine label="Nombre" value={`"${fragranceName}"`} />}
@@ -286,16 +388,26 @@ export default function ProductDetail({ product, isCustomizable, options }) {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setQuantity(q => Math.max(1, q - 1))}
-              className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary/20"
-            >-</button>
-            <span className="text-lg font-bold w-8 text-center">{quantity}</span>
-            <button
-              onClick={() => setQuantity(q => q + 1)}
-              className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary/20"
-            >+</button>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary/20"
+              >
+                -
+              </button>
+              <span className="text-lg font-bold w-8 text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity((q) => q + 1)}
+                disabled={quantity >= product.stock}
+                className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary/20 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+            </div>
+            {quantity >= product.stock && (
+              <span className="text-[10px] text-red-300 font-medium">Stock máximo</span>
+            )}
           </div>
 
           <div className="text-right">
@@ -315,9 +427,12 @@ export default function ProductDetail({ product, isCustomizable, options }) {
         </button>
       </div>
 
+      <RelatedProductsSection products={relatedProducts} />
     </div>
   );
 }
+
+// ─── Sub-componentes ────────────────────────────────────────────
 
 function Section({ step, title, icon, children }) {
   return (
@@ -354,8 +469,8 @@ function NoteSelector({ label, subtitle, notes, selected, max, count, color, onT
         </span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {notes.map(note => {
-          const isSelected = selected.some(n => n._id === note._id);
+        {notes.map((note) => {
+          const isSelected = selected.some((n) => n._id === note._id);
           return (
             <button
               key={note._id}
@@ -379,6 +494,62 @@ function PriceLine({ label, value }) {
       <span className="text-secondary/60">{label}</span>
       <span className="text-secondary font-medium">{value}</span>
     </div>
+  );
+}
+
+function RelatedProductsSection({ products }) {
+  if (!products || products.length === 0) return null;
+
+  return (
+    <div className="mt-14 border-t border-gray-200 pt-10">
+      <h2 className="text-2xl font-bold text-primary font-sora mb-6">Productos relacionados</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {products.map((p) => (
+          <Link
+            key={p._id}
+            href={`/product/${p._id}`}
+            className="group block rounded-xl border border-gray-200 overflow-hidden hover:border-accent transition-colors duration-300"
+          >
+            <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+              {p.image ? (
+                <img
+                  src={`/images/products/${p.image}`}
+                  alt={p.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <span className="text-4xl text-gray-300">◈</span>
+              )}
+            </div>
+            <div className="p-3">
+              <h3 className="font-semibold text-primary text-sm line-clamp-2">{p.name}</h3>
+              <p className="text-accent font-bold text-sm mt-1">desde ${p.price}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Íconos SVG ─────────────────────────────────────────────────
+
+function HeartIcon({ filled }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={1.5}
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+      />
+    </svg>
   );
 }
 
