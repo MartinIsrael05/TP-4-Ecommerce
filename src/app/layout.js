@@ -22,7 +22,7 @@ const sora = Sora({
 });
 
 export const metadata = {
-  title: "ESSENCE Perfumes",
+  title: "FRAGMENTE",
   description: "Ecommerce de fragancias premium. Crea tu perfume personalizado.",
 };
 

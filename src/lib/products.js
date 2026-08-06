@@ -18,6 +18,7 @@ function serializeProduct(product) {
 
       return category.toString();
     }),
+    customizableOptions: product.customizableOptions ?? ["volume"],
     createdAt: product.createdAt?.toISOString(),
     updatedAt: product.updatedAt?.toISOString(),
   };

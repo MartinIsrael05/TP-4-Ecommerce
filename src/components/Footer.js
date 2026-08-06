@@ -5,7 +5,7 @@ const Footer = () => {
 
         <div className="flex flex-col items-center">
           <h2 className="font-medium text-[2em] font-sora text-white leading-none mt-2">
-            ESSENCE
+            FRAGMENTE
           </h2>
           <p className="text-sm text-neutral-300 mt-2">Perfumes premium</p>
         </div>

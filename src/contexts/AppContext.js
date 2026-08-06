@@ -4,8 +4,6 @@ import { useState, useContext, createContext, useEffect } from "react";
 
 const AppContext = createContext();
 
-// ─── Helpers que llaman a las API routes de favoritos ───────────
-
 async function apiFetchFavorites(userId) {
   const res = await fetch(`/api/users/${userId}/favorites`);
   const data = await res.json();
@@ -44,14 +42,12 @@ async function apiSyncFavorites(userId, favoriteIds) {
   return data.favorites;
 }
 
-// ─── Provider ────────────────────────────────────────────────────
-
 export const AppContextProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
+  const [contextReady, setContextReady] = useState(false);
 
-  // Al montar: recuperar estado desde localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) setCart(JSON.parse(savedCart));
@@ -60,31 +56,29 @@ export const AppContextProvider = ({ children }) => {
     if (savedUser) {
       const user = JSON.parse(savedUser);
       setActiveUser(user);
-      // Si hay usuario guardado, cargar sus favoritos de DB
+      setContextReady(true);
+      // Cargar favoritos de DB en segundo plano, sin bloquear la UI
       apiFetchFavorites(user._id)
         .then((favs) => setFavorites(favs))
         .catch((err) => console.error("Error cargando favoritos:", err));
       return;
     }
 
-    // Sin usuario logueado, cargar favoritos locales
     const savedFavs = localStorage.getItem("favorites");
     if (savedFavs) setFavorites(JSON.parse(savedFavs));
+
+    setContextReady(true);
   }, []);
 
-  // Persistir carrito en localStorage cada vez que cambia
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // Persistir usuario en localStorage cuando cambia
   useEffect(() => {
     if (activeUser) {
       localStorage.setItem("activeUser", JSON.stringify(activeUser));
     }
   }, [activeUser]);
-
-  // ─── CARRITO ────────────────────────────────────────────────
 
   const addToCart = (product, customizations, quantity) => {
     const cartItemId = `${product._id}-${JSON.stringify(customizations)}`;
@@ -137,8 +131,6 @@ export const AppContextProvider = ({ children }) => {
 
   const clearCart = () => setCart([]);
 
-  // ─── FAVORITOS ──────────────────────────────────────────────
-
   const addFavorite = async (product) => {
     if (activeUser) {
       try {
@@ -149,7 +141,6 @@ export const AppContextProvider = ({ children }) => {
       }
       return;
     }
-    // Sin usuario: guardar en estado local + localStorage
     setFavorites((prev) => {
       const alreadyIn = prev.some((f) => f._id === product._id);
       if (alreadyIn) return prev;
@@ -179,13 +170,10 @@ export const AppContextProvider = ({ children }) => {
   const isFavorite = (productId) => favorites.some((f) => f._id === productId);
   const favoritesQty = () => favorites.length;
 
-  // ─── USUARIO ────────────────────────────────────────────────
-
   const login = async (userData) => {
     setActiveUser(userData);
     localStorage.setItem("activeUser", JSON.stringify(userData));
 
-    // Combinar favoritos locales con los del usuario en DB
     const savedFavs = localStorage.getItem("favorites");
     const localFavs = savedFavs ? JSON.parse(savedFavs) : [];
     const localIds = localFavs.map((p) => p._id);
@@ -193,11 +181,9 @@ export const AppContextProvider = ({ children }) => {
     try {
       let updated;
       if (localIds.length > 0) {
-        // Hay favoritos locales: sincronizar (merge sin duplicados)
         updated = await apiSyncFavorites(userData._id, localIds);
         localStorage.removeItem("favorites");
       } else {
-        // Sin favoritos locales: solo cargar los del usuario
         updated = await apiFetchFavorites(userData._id);
       }
       setFavorites(updated);
@@ -229,6 +215,7 @@ export const AppContextProvider = ({ children }) => {
         updateQuantity,
         clearCart,
         activeUser,
+        contextReady,
         login,
         logout,
       }}

@@ -36,7 +36,8 @@ export default function LoginPage() {
       }
 
       login(data.user);
-      router.push("/");
+      const params = new URLSearchParams(window.location.search);
+      router.push(params.get("redirect") || "/");
     } catch (err) {
       setError(err.message);
     } finally {

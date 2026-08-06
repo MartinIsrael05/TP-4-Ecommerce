@@ -17,6 +17,9 @@ function getProductPayload(formData) {
     categories: formData
       .getAll("categories")
       .filter((categoryId) => mongoose.Types.ObjectId.isValid(categoryId)),
+    customizableOptions: [
+      ...new Set(["volume", ...formData.getAll("customizableOptions").filter(Boolean)]),
+    ],
   };
 }
 

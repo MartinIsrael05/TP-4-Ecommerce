@@ -53,6 +53,7 @@ export async function PUT(request, { params }) {
         stock: body.stock,
         image: body.image,
         categories: body.categories,
+        customizableOptions: body.customizableOptions,
       },
       {
         new: true,

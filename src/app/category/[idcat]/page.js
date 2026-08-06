@@ -15,7 +15,11 @@ export default async function CategoryProductsPage({ params }) {
     notFound();
   }
 
-  const products = await getProductsByCategory(category._id);
+  const allProducts = await getProductsByCategory(category._id);
+  // Excluir el producto personalizable. Tiene su propio banner en la home
+  const products = allProducts.filter(
+    (p) => !Array.isArray(p.customizableOptions) || p.customizableOptions.length <= 1
+  );
 
   return (
     <main className="min-h-screen bg-background px-6 py-10 text-slate-900">

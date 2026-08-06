@@ -34,13 +34,22 @@ const productSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
+    customizableOptions: {
+      type: [String],
+      enum: ["volume", "concentration", "notes", "bottleDesign", "packaging"],
+      default: ["volume"],
+    },
   },
   {
     timestamps: true,
   }
 );
 
-if (mongoose.models.Product && !mongoose.models.Product.schema.path("categories")) {
+if (
+  mongoose.models.Product &&
+  (!mongoose.models.Product.schema.path("categories") ||
+    !mongoose.models.Product.schema.path("customizableOptions"))
+) {
   mongoose.deleteModel("Product");
 }
 

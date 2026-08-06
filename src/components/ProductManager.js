@@ -13,6 +13,14 @@ import {
   updateProduct,
 } from "@/app/actions/products";
 
+const CUSTOMIZABLE_OPTIONS_LIST = [
+  { value: "volume", label: "Volumen (obligatorio)" },
+  { value: "concentration", label: "Concentración (EDT / EDP / Parfum)" },
+  { value: "notes", label: "Notas olfativas" },
+  { value: "bottleDesign", label: "Diseño de frasco" },
+  { value: "packaging", label: "Embalaje" },
+];
+
 const initialForm = {
   name: "",
   description: "",
@@ -20,6 +28,7 @@ const initialForm = {
   stock: "",
   image: "",
   categories: [],
+  customizableOptions: ["volume"],
 };
 
 export default function ProductManager({
@@ -61,6 +70,16 @@ export default function ProductManager({
     });
   }
 
+  function handleCustomizableOptionChange(event) {
+    const { checked, value } = event.target;
+    setForm((current) => {
+      const customizableOptions = checked
+        ? [...current.customizableOptions, value]
+        : current.customizableOptions.filter((opt) => opt !== value);
+      return { ...current, customizableOptions };
+    });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setIsSaving(true);
@@ -94,6 +113,7 @@ export default function ProductManager({
       categories: (product.categories || []).map((category) =>
         typeof category === "string" ? category : category._id
       ),
+      customizableOptions: product.customizableOptions ?? ["volume"],
     });
     setMessage("Editando producto.");
   }
@@ -208,6 +228,30 @@ export default function ProductManager({
             )}
           </fieldset>
 
+          <fieldset className="rounded-lg border border-slate-300 px-4 py-3">
+            <legend className="px-1 text-sm font-medium text-slate-700">
+              Opciones de customización
+            </legend>
+            <div className="grid gap-2">
+              {CUSTOMIZABLE_OPTIONS_LIST.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"
+                >
+                  <input
+                    checked={form.customizableOptions.includes(opt.value)}
+                    className="h-4 w-4"
+                    name="customizableOptions"
+                    type="checkbox"
+                    value={opt.value}
+                    onChange={handleCustomizableOptionChange}
+                  />
+                  <span className="text-sm font-medium text-slate-900">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="flex gap-3">
             <button
               className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
@@ -285,6 +329,19 @@ export default function ProductManager({
                     ))}
                   </div>
                 ) : null}
+
+                {product.customizableOptions?.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {product.customizableOptions.map((opt) => (
+                      <span
+                        key={opt}
+                        className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700"
+                      >
+                        {opt}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-4 flex gap-3">
                   <button

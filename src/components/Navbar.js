@@ -21,7 +21,9 @@ export default function Navbar() {
         <div className="flex items-center gap-1">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/categories">Categorías</NavLink>
-          <NavLink href="/dashboard">Dashboard</NavLink>
+          {activeUser?.role === "admin" && (
+            <NavLink href="/dashboard">Dashboard</NavLink>
+          )}
         </div>
 
         {/* Acciones: favoritos, carrito y usuario */}

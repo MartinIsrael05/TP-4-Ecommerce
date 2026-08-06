@@ -1,79 +1,83 @@
-import Image from "next/image";
 import Link from "next/link";
 
-function getProductImageSrc(image) {
-  if (!image) {
-    return "";
-  }
-
-  if (image.startsWith("/")) {
-    return image;
-  }
-
-  return `/images/products/${image}`;
+function PlaceholderImage({ name }) {
+  const initial = name ? name[0].toUpperCase() : "◈";
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/10">
+      <span className="text-4xl font-bold font-sora text-primary/20 leading-none select-none">
+        {initial}
+      </span>
+      <span className="mt-2 text-[10px] tracking-[0.3em] uppercase text-primary/20 font-medium">
+        FRAGMENTE
+      </span>
+    </div>
+  );
 }
 
 export default function ProductGrid({ products = [] }) {
   if (products.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
-        Todavia no hay productos cargados.
+      <p className="rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center text-gray-400 text-sm">
+        No hay productos disponibles.
       </p>
     );
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {products.map((product) => (
         <Link
           key={product._id}
           href={`/product/${product._id}`}
-          className="group block rounded-xl p-4 hover:bg-white/40 transition-colors duration-300"
+          className="group block"
         >
-          <article>
-            <div className="relative aspect-square flex items-center justify-center overflow-visible">
+          <article className="rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-accent hover:shadow-md transition-all duration-300">
+            <div className="aspect-square overflow-hidden">
               {product.image ? (
-                <Image
+                <img
+                  src={`/images/products/${product.image}`}
                   alt={product.name}
-                  className="object-contain transition-transform duration-700 group-hover:scale-105"
-                  fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  src={getProductImageSrc(product.image)}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                  Sin imagen
-                </div>
+                <PlaceholderImage name={product.name} />
               )}
             </div>
 
-            <div className="mt-4">
-              <h2 className="text-lg font-semibold text-primary">
+            <div className="px-4 py-3.5">
+              <h2 className="font-semibold text-primary text-sm leading-tight line-clamp-2">
                 {product.name}
               </h2>
 
-              <p className="mt-1 line-clamp-2 text-sm text-slate-600">
-                {product.description || "Sin descripcion"}
-              </p>
+              {product.description && (
+                <p className="mt-1 text-xs text-gray-400 line-clamp-1">
+                  {product.description}
+                </p>
+              )}
 
-              {product.categories?.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {product.categories.map((category) =>
-                    typeof category === "string" ? null : (
+              <div className="mt-3 flex items-center justify-between">
+                <span className="font-bold text-accent text-sm">
+                  desde ${product.price}
+                </span>
+                <span className="text-xs text-gray-300 group-hover:text-accent transition-colors duration-200">
+                  →
+                </span>
+              </div>
+
+              {product.categories?.length > 0 && (
+                <div className="mt-2.5 flex flex-wrap gap-1">
+                  {product.categories.slice(0, 2).map((cat) =>
+                    typeof cat === "object" && cat?.name ? (
                       <span
-                        key={category._id}
-                        className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                        key={cat._id}
+                        className="rounded-full bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary/60"
                       >
-                        {category.name}
+                        {cat.name}
                       </span>
-                    )
+                    ) : null
                   )}
                 </div>
-              ) : null}
-
-              <p className="mt-3 text-sm font-semibold text-primary">
-                desde ${product.price}
-              </p>
+              )}
             </div>
           </article>
         </Link>

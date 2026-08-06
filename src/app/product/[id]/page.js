@@ -16,27 +16,22 @@ export default async function ProductPage({ params }) {
     notFound();
   }
 
-  const isCustomizable = product.categories.some(
-    (cat) =>
-      cat.name?.toLowerCase() === "creá tu perfume" ||
-      cat.name?.toLowerCase() === "crea tu perfume"
-  );
+  const opts = product.customizableOptions ?? ["volume"];
+  const isCustomizable = opts.some((opt) => opt !== "volume");
 
   const categoryIds = product.categories.map((cat) => cat._id);
 
   const [volumes, concentrations, notes, bottleDesigns, packagings, relatedProducts] =
     await Promise.all([
       getVolumes(),
-      isCustomizable ? getConcentrations() : Promise.resolve([]),
-      isCustomizable ? getNotes() : Promise.resolve([]),
-      isCustomizable ? getBottleDesigns() : Promise.resolve([]),
-      isCustomizable ? getPackagings() : Promise.resolve([]),
+      opts.includes("concentration") ? getConcentrations() : Promise.resolve([]),
+      opts.includes("notes") ? getNotes() : Promise.resolve([]),
+      opts.includes("bottleDesign") ? getBottleDesigns() : Promise.resolve([]),
+      opts.includes("packaging") ? getPackagings() : Promise.resolve([]),
       getRelatedProducts(id, categoryIds),
     ]);
 
-  const options = isCustomizable
-    ? { volumes, concentrations, notes, bottleDesigns, packagings }
-    : { volumes };
+  const options = { volumes, concentrations, notes, bottleDesigns, packagings };
 
   return (
     <ProductDetail
