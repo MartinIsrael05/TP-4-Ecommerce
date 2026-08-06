@@ -1,13 +1,16 @@
 import { connectDB } from "@/lib/mongodb";
-import { getProducts } from "@/lib/products";
+import { getProducts, searchProducts } from "@/lib/products";
 import "@/models/Category";
 import Product from "@/models/Product";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const products = await getProducts();
+    const { searchParams } = new URL(request.url);
+    const q = searchParams.get("q")?.trim();
+
+    const products = q ? await searchProducts(q) : await getProducts();
 
     return Response.json(products);
   } catch (error) {

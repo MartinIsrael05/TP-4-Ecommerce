@@ -6,6 +6,7 @@ function serializeVolume(volume) {
     _id: volume._id.toString(),
     name: volume.name,
     price: volume.price,
+    priceMultiplier: volume.priceMultiplier ?? 1.0,
     image: volume.image,
     createdAt: volume.createdAt?.toISOString(),
     updatedAt: volume.updatedAt?.toISOString(),

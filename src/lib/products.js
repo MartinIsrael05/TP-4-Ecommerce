@@ -56,6 +56,21 @@ export async function getProductsByCategory(categoryId) {
   return products.map(serializeProduct);
 }
 
+export async function searchProducts(query) {
+  await connectDB();
+
+  const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+
+  const products = await Product.find({
+    $or: [{ name: { $regex: regex } }, { description: { $regex: regex } }],
+  })
+    .populate("categories")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return products.map(serializeProduct);
+}
+
 export async function getRelatedProducts(productId, categoryIds) {
   await connectDB();
 

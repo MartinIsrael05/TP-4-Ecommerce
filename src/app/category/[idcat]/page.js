@@ -1,11 +1,24 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import ProductGrid from "@/components/ProductGrid";
+import ProductFilterGrid from "@/components/ProductFilterGrid";
 import { getCategoryById } from "@/lib/categories";
 import { getProductsByCategory } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }) {
+  const { idcat } = await params;
+  const category = await getCategoryById(idcat);
+  if (!category) return { title: "Categoría no encontrada | FRAGMENTE" };
+
+  return {
+    title: `${category.name} | FRAGMENTE`,
+    description:
+      category.description ||
+      `Explorá los perfumes de la categoría ${category.name} en FRAGMENTE.`,
+  };
+}
 
 export default async function CategoryProductsPage({ params }) {
   const { idcat } = await params;
@@ -45,7 +58,7 @@ export default async function CategoryProductsPage({ params }) {
           ) : null}
         </section>
 
-        <ProductGrid products={products} />
+        <ProductFilterGrid products={products} />
       </div>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAppContext } from "@/contexts/AppContext";
+import SearchBar from "@/components/SearchBar";
 
 export default function Navbar() {
   const { favoritesQty, cart, activeUser, logout } = useAppContext();
@@ -12,12 +13,10 @@ export default function Navbar() {
     <header className="border-b border-white/10 bg-primary text-secondary">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 flex-wrap">
 
-        {/* Logo */}
         <Link href="/" className="text-xl font-bold font-sora tracking-widest hover:text-accent transition-colors">
           FRAGMENTE
         </Link>
 
-        {/* Links de navegación */}
         <div className="flex items-center gap-1">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/categories">Categorías</NavLink>
@@ -26,10 +25,10 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Acciones: favoritos, carrito y usuario */}
+        <SearchBar />
+
         <div className="flex items-center gap-4">
 
-          {/* Favoritos */}
           <Link href="/favorites" className="relative text-sm font-medium hover:text-accent transition-colors">
             Favoritos
             {favoritesQty() > 0 && (
@@ -39,7 +38,6 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* Carrito */}
           <Link href="/cart" className="relative text-sm font-medium hover:text-accent transition-colors">
             Carrito
             {cartQty > 0 && (
@@ -49,7 +47,6 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* Usuario */}
           {activeUser ? (
             <div className="flex items-center gap-2 border-l border-white/20 pl-4">
               <Link

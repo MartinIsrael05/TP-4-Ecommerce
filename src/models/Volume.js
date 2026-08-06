@@ -4,6 +4,7 @@ const volumeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
+    priceMultiplier: { type: Number, default: 1.0 },
     image: { type: String, default: "" },
   },
   { timestamps: true }

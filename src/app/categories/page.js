@@ -4,6 +4,11 @@ import { getCategories } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Categorías | FRAGMENTE",
+  description: "Explorá todas las categorías de fragancias premium en FRAGMENTE.",
+};
+
 export default async function CategoriesPage() {
   const categories = await getCategories();
 

@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/products";
 import { getCategories } from "@/lib/categories";
-import ProductGrid from "@/components/ProductGrid";
+import ProductFilterGrid from "@/components/ProductFilterGrid";
 import Hero from "@/components/Hero";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "FRAGMENTE — Fragancias Premium",
+  description:
+    "Explorá nuestra colección de perfumes premium o creá tu fragancia exclusiva desde cero.",
+};
 
 export default async function Home() {
   const [products, categories] = await Promise.all([
@@ -69,7 +75,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <ProductGrid products={regularProducts} />
+        <ProductFilterGrid products={regularProducts} />
       </section>
 
       {customProduct && (

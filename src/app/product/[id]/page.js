@@ -7,6 +7,26 @@ import { getBottleDesigns } from "@/lib/bottleDesigns";
 import { getPackagings } from "@/lib/packagings";
 import ProductDetail from "@/components/ProductDetail";
 
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const product = await getProductById(id);
+  if (!product) return { title: "Producto no encontrado | FRAGMENTE" };
+
+  const description = product.description
+    ? product.description.slice(0, 155)
+    : `Comprá ${product.name} en FRAGMENTE. Desde $${product.price}.`;
+
+  return {
+    title: `${product.name} | FRAGMENTE`,
+    description,
+    openGraph: {
+      title: `${product.name} | FRAGMENTE`,
+      description,
+      ...(product.image && { images: [`/images/products/${product.image}`] }),
+    },
+  };
+}
+
 export default async function ProductPage({ params }) {
   const { id } = await params;
 

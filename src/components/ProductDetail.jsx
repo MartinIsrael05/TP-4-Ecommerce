@@ -52,7 +52,11 @@ export default function ProductDetail({ product, isCustomizable, options, relate
 
   const notesOfType = (type) => selectedNotes.filter((n) => n.type === type);
 
-  const basePrice = selectedVolume ? selectedVolume.price : 0;
+  const basePrice = selectedVolume
+    ? isCustomizable
+      ? selectedVolume.price
+      : Math.round(product.price * (selectedVolume.priceMultiplier ?? 1))
+    : 0;
   const concentrationExtra = selectedConcentration?.priceModifier || 0;
   const totalPrice = (basePrice + concentrationExtra) * quantity;
 
@@ -74,100 +78,124 @@ export default function ProductDetail({ product, isCustomizable, options, relate
 
   if (!isCustomizable) {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        {/* Encabezado con botón de favoritos */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-primary font-sora">{product.name}</h1>
-            {product.categories?.length > 0 && (
-              <div className="flex gap-2 mt-2 flex-wrap">
-                {product.categories.map((cat) =>
-                  typeof cat === "object" ? (
-                    <span
-                      key={cat._id}
-                      className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium"
-                    >
-                      {cat.name}
-                    </span>
-                  ) : null
-                )}
+      <div className="max-w-5xl mx-auto px-6 py-10">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-accent transition-colors mb-8">
+          ← Volver al catálogo
+        </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+
+          {/* Imagen */}
+          <div className="aspect-square rounded-3xl overflow-hidden bg-primary/5 sticky top-6">
+            {product.image ? (
+              <img
+                src={`/images/products/${product.image}`}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                <span className="text-7xl font-bold font-sora text-primary/20 leading-none">
+                  {product.name[0]}
+                </span>
+                <span className="text-xs tracking-[0.4em] uppercase text-primary/20">FRAGMENTE</span>
               </div>
             )}
           </div>
-          <button
-            onClick={handleToggleFavorite}
-            title={isFav ? "Quitar de favoritos" : "Agregar a favoritos"}
-            className={`p-2.5 rounded-full border-2 transition-colors flex-shrink-0 ${
-              isFav
-                ? "border-accent text-accent bg-accent/10"
-                : "border-gray-200 text-gray-400 hover:border-accent hover:text-accent"
-            }`}
-          >
-            <HeartIcon filled={isFav} />
-          </button>
-        </div>
 
-        <p className="mt-3 text-gray-600">{product.description}</p>
-        <p className="mt-2 text-xl font-semibold text-accent">desde ${product.price}</p>
-        <p className={`mt-1 text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
-          {product.stock > 0 ? `${product.stock} unidades disponibles` : "Sin stock"}
-        </p>
-
-        {/* Selector de volumen */}
-        <div className="mt-6">
-          <h2 className="font-semibold text-lg">Volumen</h2>
-          <div className="flex gap-3 mt-2 flex-wrap">
-            {options.volumes?.map((volume) => (
+          {/* Información */}
+          <div>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-primary font-sora">{product.name}</h1>
+                {product.categories?.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {product.categories.map((cat) =>
+                      typeof cat === "object" ? (
+                        <span
+                          key={cat._id}
+                          className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium"
+                        >
+                          {cat.name}
+                        </span>
+                      ) : null
+                    )}
+                  </div>
+                )}
+              </div>
               <button
-                key={volume._id}
-                onClick={() => setSelectedVolume(volume)}
-                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
-                  selectedVolume?._id === volume._id
-                    ? "border-accent bg-accent/10 text-primary font-semibold"
-                    : "border-gray-200 hover:border-gray-400"
+                onClick={handleToggleFavorite}
+                title={isFav ? "Quitar de favoritos" : "Agregar a favoritos"}
+                className={`p-2.5 rounded-full border-2 transition-colors flex-shrink-0 ${
+                  isFav
+                    ? "border-accent text-accent bg-accent/10"
+                    : "border-gray-200 text-gray-400 hover:border-accent hover:text-accent"
                 }`}
               >
-                {volume.name} — ${volume.price}
+                <HeartIcon filled={isFav} />
               </button>
-            ))}
+            </div>
+
+            <p className="mt-4 text-gray-600 leading-relaxed">{product.description}</p>
+            <p className="mt-3 text-2xl font-bold text-accent">desde ${product.price}</p>
+            <p className={`mt-1 text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
+              {product.stock > 0 ? `${product.stock} unidades disponibles` : "Sin stock"}
+            </p>
+
+            <div className="mt-6">
+              <h2 className="font-semibold text-lg">Volumen</h2>
+              <div className="flex gap-3 mt-2 flex-wrap">
+                {options.volumes?.map((volume) => (
+                  <button
+                    key={volume._id}
+                    onClick={() => setSelectedVolume(volume)}
+                    className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                      selectedVolume?._id === volume._id
+                        ? "border-accent bg-accent/10 text-primary font-semibold"
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    {volume.name} — ${Math.round(product.price * (volume.priceMultiplier ?? 1))}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-4">
+              <h2 className="font-semibold text-lg">Cantidad</h2>
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="px-3 py-1 border rounded-lg hover:bg-gray-100"
+              >
+                -
+              </button>
+              <span className="font-bold w-6 text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity((q) => q + 1)}
+                disabled={quantity >= product.stock}
+                className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+              {quantity >= product.stock && (
+                <span className="text-xs text-red-400 font-medium">Máximo disponible</span>
+              )}
+            </div>
+
+            {selectedVolume && (
+              <div className="mt-6 rounded-xl bg-primary/5 p-4">
+                <p className="text-2xl font-bold text-primary">${basePrice * quantity}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedVolume}
+              className="mt-6 w-full bg-primary text-secondary py-3 rounded-lg font-semibold disabled:opacity-40 hover:bg-primary-hover transition-colors"
+            >
+              Agregar al carrito
+            </button>
           </div>
         </div>
-
-        {/* Cantidad */}
-        <div className="mt-6 flex items-center gap-4">
-          <h2 className="font-semibold text-lg">Cantidad</h2>
-          <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="px-3 py-1 border rounded-lg hover:bg-gray-100"
-          >
-            -
-          </button>
-          <span className="font-bold w-6 text-center">{quantity}</span>
-          <button
-            onClick={() => setQuantity((q) => q + 1)}
-            disabled={quantity >= product.stock}
-            className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            +
-          </button>
-          {quantity >= product.stock && (
-            <span className="text-xs text-red-400 font-medium">Máximo disponible</span>
-          )}
-        </div>
-
-        {selectedVolume && (
-          <div className="mt-6 rounded-xl bg-primary/5 p-4">
-            <p className="text-2xl font-bold text-primary">${selectedVolume.price * quantity}</p>
-          </div>
-        )}
-
-        <button
-          onClick={handleAddToCart}
-          disabled={!selectedVolume}
-          className="mt-6 w-full bg-primary text-secondary py-3 rounded-lg font-semibold disabled:opacity-40 hover:bg-primary-hover transition-colors"
-        >
-          Agregar al carrito
-        </button>
 
         <RelatedProductsSection products={relatedProducts} />
       </div>
@@ -176,6 +204,9 @@ export default function ProductDetail({ product, isCustomizable, options, relate
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
+      <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-accent transition-colors mb-8">
+        ← Volver al catálogo
+      </Link>
 
       {/* Encabezado */}
       <div className="text-center mb-10 relative">
@@ -190,6 +221,16 @@ export default function ProductDetail({ product, isCustomizable, options, relate
         >
           <HeartIcon filled={isFav} />
         </button>
+
+        {product.image && (
+          <div className="w-36 h-36 mx-auto mb-6 rounded-full overflow-hidden ring-4 ring-accent/20">
+            <img
+              src={`/images/products/${product.image}`}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         <p className="text-sm uppercase tracking-[0.3em] text-accent font-semibold">Experiencia exclusiva</p>
         <h1 className="text-4xl font-bold text-primary font-sora mt-2">{product.name}</h1>
@@ -432,8 +473,6 @@ export default function ProductDetail({ product, isCustomizable, options, relate
   );
 }
 
-// ─── Sub-componentes ────────────────────────────────────────────
-
 function Section({ step, title, icon, children }) {
   return (
     <div className="mt-8">
@@ -531,8 +570,6 @@ function RelatedProductsSection({ products }) {
     </div>
   );
 }
-
-// ─── Íconos SVG ─────────────────────────────────────────────────
 
 function HeartIcon({ filled }) {
   return (
