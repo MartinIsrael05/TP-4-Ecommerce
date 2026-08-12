@@ -34,7 +34,7 @@ npm install
 Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 ```env
-MONGODB_URI=mongodb+srv://martoo:marto123@cluster0.xaca78f.mongodb.net/Ecommerce
+MONGODB_URI=<conexion-a-mongoDB>
 ```
 
 **4. Ejecutar en desarrollo**
