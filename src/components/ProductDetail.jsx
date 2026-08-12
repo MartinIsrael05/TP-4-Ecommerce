@@ -85,7 +85,7 @@ export default function ProductDetail({ product, isCustomizable, options, relate
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
 
           {/* Imagen */}
-          <div className="aspect-square rounded-3xl overflow-hidden bg-primary/5 sticky top-6">
+          <div className="aspect-square rounded-3xl overflow-hidden bg-primary/5 md:sticky md:top-6">
             {product.image ? (
               <img
                 src={`/images/products/${product.image}`}
